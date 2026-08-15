@@ -1,0 +1,13 @@
+{
+  "name": "nodejs-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": [],
+  "author": "Anastasiia Hrebelnyk <anastasiiahrebelnyk@gmail.com>",
+  "license": "ISC"
+}
