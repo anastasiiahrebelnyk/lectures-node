@@ -1,25 +1,19 @@
 import express from 'express';
-// import { readFile } from 'node:fs/promises';
-// import { resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import cors from 'cors';
+import PinoHttp from 'pino-http';
 
-import 'dotenv/config';
-import postsRouter from '../lesson-2/src/routes/postsRouter.js';
-// const postPath = resolve('src', 'db', 'posts.json');
+const postPath = resolve('src', 'db', 'posts.json');
 // console.log(postPath);
 
 // app.set('json spaces', 8);
 
-import connectDatabase from '../lesson-2/src/db/connectDatabase.js';
-import logger from '../lesson-2/src/middlewares/logger.js';
-import notFoundHandler from '../lesson-2/src/middlewares/notFoundHandler.js';
-import errorHandler from '../lesson-2/src/middlewares/errorHandler.js';
-
-// const getPosts = async () => {
-//   const data = await readFile(postPath, 'utf8');
-//   const posts = JSON.parse(data);
-//   return posts;
-// };
+const getPosts = async () => {
+  const data = await readFile(postPath, 'utf8');
+  const posts = JSON.parse(data);
+  return posts;
+};
 
 const app = express();
 
@@ -36,7 +30,22 @@ const app = express();
 
 //request - вся інформація про запит зібрана в об'єкт
 // response - налаштування і відправка запиту
+
+const logger = PinoHttp({
+  transport: {
+    target: 'pino-pretty',
+    options: {
+      colorize: true,
+      translateTime: 'HH:MM:ss',
+      ignore: 'pid,hostname',
+      messageFormat:
+        '{req.method} {req.url} {res.statusCode} - {responseTime}ms',
+      hideObject: true,
+    },
+  },
+});
 app.use(logger);
+
 //! CORS - налаштування, але використовують пакет npm i cors
 // app.use((req, res, next) => {
 //   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -55,24 +64,50 @@ app.use(logger);
 // app.use(corsMiddleware);
 app.use(express.json());
 app.use(cors());
-app.use('/posts', postsRouter);
-// app.get('/', (request, response) => {
-//   console.log(request.method);
-//   console.log(request.url);
-//   response.send('<h1>Home page</h1>');
-// });
+
+app.get('/', (request, response) => {
+  console.log(request.method);
+  console.log(request.url);
+  response.send('<h1>Home page</h1>');
+});
+
+app.get('/posts', async (req, res) => {
+  // const data = await readFile(postPath, 'utf8');
+  // console.log(data);
+  // const posts = JSON.parse(data);
+  // res.send(posts); не читає null
+  const posts = await getPosts();
+  res.json(posts);
+});
+
+app.get('/posts/:id', async (req, res) => {
+  // console.log(req.params); //дізнаємось id
+  const { id } = req.params;
+  // const data = await readFile(postPath, 'utf8');
+  // const posts = JSON.parse(data);
+  const posts = await getPosts();
+  const result = posts.find((item) => item._id === id);
+  res.json(result);
+});
 
 //пишеться внизу для того щоб зловити запити, адреси яких не існують
-app.use(notFoundHandler);
+app.use((req, res) => {
+  res.status(404).json({
+    message: `${req.method} ${req.url} not found`,
+  });
+});
 
 //обробник помилки function overloading middleware, пишемо в самому кінці, обов'язково 4 параметри (будь-яка функція, яка має 4 арг, буде розцінюватись як функція обробник помилок)
-app.use(errorHandler);
+app.use((error, req, res, next) => {
+  const isProd = process.env.NODE_ENV === 'production';
+  const message = isProd ? 'some error' : error.message;
+
+  res.status(500).json({
+    message,
+  });
+});
 
 // console.log(process.env.PORT); //для деплою на конкретний хост
-
-//hellohello123 - anastasiia
-
-await connectDatabase();
 
 const port = Number(process.env.PORT) || 3000;
 
