@@ -5,6 +5,7 @@ import cors from 'cors';
 
 import 'dotenv/config';
 import postsRouter from '../lesson-2/src/routes/postsRouter.js';
+import commentsRouter from '../lesson-2/src/routes/commentsRouter.js';
 // const postPath = resolve('src', 'db', 'posts.json');
 // console.log(postPath);
 
@@ -36,7 +37,6 @@ const app = express();
 
 //request - вся інформація про запит зібрана в об'єкт
 // response - налаштування і відправка запиту
-app.use(logger);
 //! CORS - налаштування, але використовують пакет npm i cors
 // app.use((req, res, next) => {
 //   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -54,8 +54,10 @@ app.use(logger);
 // const corsMiddleware = cors();
 // app.use(corsMiddleware);
 app.use(express.json());
+app.use(logger);
 app.use(cors());
 app.use('/posts', postsRouter);
+app.use('/comments', commentsRouter);
 // app.get('/', (request, response) => {
 //   console.log(request.method);
 //   console.log(request.url);
