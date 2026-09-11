@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import { postTypeList } from '../../constants/postConstants.js';
 
 const postSchema = new Schema(
   {
@@ -8,12 +9,16 @@ const postSchema = new Schema(
     },
     type: {
       type: String,
-      default: 'text',
-      enum: ['text', 'image', 'video', 'combine'],
+      default: postTypeList[0],
+      enum: postTypeList,
     },
   },
   { versionKey: false, timestamps: true },
 );
+
+postSchema.index({ type: 1 });
+
+export const postSortFields = ['text', 'type', 'createdAt', 'updatedAt'];
 
 const Post = model('Post', postSchema);
 // Post => posts
@@ -21,21 +26,3 @@ const Post = model('Post', postSchema);
 // mouse => mice
 
 export default Post;
-
-// import { Schema, model } from "mongoose";
-
-// const postSchema = new Schema({
-//   text: {
-//     type: String,
-//     required: true,
-//   },
-//   type: {
-//     type: String,
-//     default: "text",
-//     enum: ["text", "image", "video", "combine"],
-//   },
-// });
-
-// const Post = model("Post", postSchema);
-
-// export default Post;

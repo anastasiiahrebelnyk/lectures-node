@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { celebrate } from 'celebrate';
 import {
   getPostById,
   getPosts,
@@ -8,21 +9,45 @@ import {
   addCommentToPostById,
   getCommentsByPostId,
 } from '../controllers/postsController.js';
+import {
+  createPostSchema,
+  getPostsSchema,
+  postIdSchema,
+  updatePostSchema,
+} from '../validation/postsValidation.js';
+import { createCommentSchema } from '../validation/commentsValidation.js';
 
 const postsRouter = Router();
 
-postsRouter.get('/', getPosts);
+postsRouter.get('/', celebrate(getPostsSchema), getPosts);
 
-postsRouter.get('/:id', getPostById);
+postsRouter.get('/:id', celebrate(postIdSchema), getPostById);
 
-postsRouter.post('/', addPost);
+postsRouter.post(
+  '/',
+  celebrate(createPostSchema, { abortEarly: false }),
+  addPost,
+);
 
-postsRouter.patch('/:id', updatePostId);
+postsRouter.patch(
+  '/:id',
+  celebrate(updatePostSchema, { abortEarly: false }),
 
-postsRouter.delete('/:id', deletePostById);
+  updatePostId,
+);
 
-postsRouter.post('/:id/comment', addCommentToPostById);
+postsRouter.delete('/:id', celebrate(postIdSchema), deletePostById);
 
-postsRouter.get('/:id/comment', getCommentsByPostId);
+postsRouter.post(
+  '/:id/comment',
+  celebrate(createCommentSchema, { abortEarly: false }),
+  addCommentToPostById,
+);
+
+postsRouter.get(
+  '/:id/comment',
+  celebrate(createCommentSchema),
+  getCommentsByPostId,
+);
 
 export default postsRouter;

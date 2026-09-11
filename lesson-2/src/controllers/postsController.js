@@ -3,12 +3,74 @@ import createHttpError from 'http-errors';
 import Comment from '../db/models/Comment.js';
 
 export const getPosts = async (req, res) => {
-  // const data = await readFile(postPath, 'utf8');
-  // console.log(data);
-  // const posts = JSON.parse(data);
-  // res.send(posts); не читає null
-  // const posts = await getPosts();
-  const posts = await Post.find();
+  const {
+    page = 1,
+    perPage = 10,
+    sortBy = '_id',
+    sortOrder = 'asc',
+    type,
+    search,
+  } = req.query;
+  const skip = (page - 1) * perPage;
+  const postQuery = Post.find();
+
+  //! QUERY BUILDER
+  if (type) {
+    postQuery.where('type').equals(type);
+  }
+  if (search) {
+    postQuery.where({
+      // text: {
+      //   $regex: search, // входження в підстроку
+      //   options: "i", //без вразування регістру
+      // }
+
+      // пошук по кільком полям
+      $or: [
+        {
+          text: {
+            $regex: search, // входження в підстроку
+            $options: 'i', //без вразування регістру
+          },
+        },
+        {
+          type: {
+            $regex: search,
+            $options: 'i',
+          },
+        },
+      ],
+    });
+  }
+  // if (createdMin) {
+  //   postQuery.where('createdAt').gte(createdMin);
+  // };
+
+  // if (createdMax) {
+  //   postQuery.where('createdAt').lte(createdMax);
+  // };
+
+  const [posts, totalItems] = await Promise.all([
+    postQuery
+      .clone()
+      .skip(skip)
+      .limit(perPage)
+      .sort({
+        [sortBy]: sortOrder,
+      }),
+    postQuery.countDocuments(),
+  ]);
+
+  const totalPages = Math.ceil(totalItems / perPage);
+  res.json({
+    posts,
+    totalItems,
+    totalPages,
+    page,
+    perPage,
+  });
+  console.log(req.query);
+
   res.json(posts);
 };
 
@@ -41,6 +103,7 @@ export const updatePostId = async (req, res) => {
   const { id } = req.params;
   const updatePost = await Post.findByIdAndUpdate(id, req.body, {
     returnDocument: 'after',
+    runValidators: true,
   });
   if (!updatePost) {
     throw createHttpError(404, `Post with id=${id} not found`);
