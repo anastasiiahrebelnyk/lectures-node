@@ -16,8 +16,11 @@ import {
   updatePostSchema,
 } from '../validation/postsValidation.js';
 import { createCommentSchema } from '../validation/commentsValidation.js';
+import { authenticate } from '../middlewares/authenticate.js';
 
 const postsRouter = Router();
+
+postsRouter.use(authenticate);
 
 postsRouter.get('/', celebrate(getPostsSchema), getPosts);
 

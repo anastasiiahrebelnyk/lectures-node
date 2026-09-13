@@ -11,13 +11,14 @@ import logger from '../lesson-2/src/middlewares/logger.js';
 import notFoundHandler from '../lesson-2/src/middlewares/notFoundHandler.js';
 import errorHandler from '../lesson-2/src/middlewares/errorHandler.js';
 import authRouter from '../lesson-2/src/routes/authRouter.js';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
 app.use(express.json());
 app.use(logger);
 app.use(cors());
-
+app.use(cookieParser());
 app.use('/auth', authRouter);
 app.use('/posts', postsRouter);
 app.use('/comments', commentsRouter);

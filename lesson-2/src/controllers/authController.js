@@ -35,3 +35,33 @@ export const loginUser = async (req, res) => {
   setSessionCookies(res, session);
   res.json(user);
 };
+
+export const refreshUserSession = async (req, res) => {
+  const { sessionId } = req.cookies;
+  const session = await Session.findOne({ _id: sessionId });
+  if (!session) {
+    throw createHttpError(401, 'Session not found');
+  }
+  if (session.refreshTokenValidUntil < new Date()) {
+    throw createHttpError(401, 'Session expired');
+  }
+  await Session.deleteOne({ _id: sessionId });
+
+  const newSession = await createSession(session.userId);
+  setSessionCookies(res, newSession);
+  res.json({ message: 'Session refreshed' });
+};
+
+export const logoutUser = async (req, res) => {
+  const { sessionId } = req.cookies;
+  const session = await Session.findOne({ _id: sessionId });
+  if (!session) {
+    throw createHttpError(401, 'Session not found');
+  }
+  await Session.deleteOne({ _id: sessionId });
+  res.clearCookie('sessionId');
+  res.clearCookie('accessToken');
+
+  res.clearCookie('refreshToken');
+  res.status(204).send();
+};

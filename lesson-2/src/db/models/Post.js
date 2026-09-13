@@ -12,13 +12,24 @@ const postSchema = new Schema(
       default: postTypeList[0],
       enum: postTypeList,
     },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
   },
   { versionKey: false, timestamps: true },
 );
 
 postSchema.index({ type: 1 });
 
-export const postSortFields = ['text', 'type', 'createdAt', 'updatedAt'];
+export const postSortFields = [
+  'text',
+  'type',
+  'userId',
+  'createdAt',
+  'updatedAt',
+];
 
 const Post = model('Post', postSchema);
 // Post => posts
