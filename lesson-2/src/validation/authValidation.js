@@ -8,3 +8,10 @@ export const registerUserSchema = {
     password: Joi.string().min(7).required(),
   }),
 };
+
+export const loginUserSchema = {
+  [Segments.BODY]: Joi.object({
+    email: Joi.string().pattern(emailRegex).required(),
+    password: Joi.string().min(7).required(),
+  }),
+};

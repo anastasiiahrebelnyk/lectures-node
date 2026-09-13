@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { emailRegex } from '../../constants/authConstants';
+import { emailRegex } from '../../constants/authConstants.js';
 
 const userSchema = new Schema(
   {
@@ -20,5 +20,17 @@ const userSchema = new Schema(
   },
   { versionKey: false, timestamps: true },
 );
+
+userSchema.pre('save', function () {
+  if (!this.username) {
+    this.username = this.email;
+  }
+});
+
+userSchema.methods.toJSON = function () {
+  const user = this.toObject();
+  delete user.password;
+  return user;
+};
 
 export const User = model('User', userSchema);
