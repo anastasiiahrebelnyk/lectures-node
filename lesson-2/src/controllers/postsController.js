@@ -1,6 +1,7 @@
 import Post from '../db/models/Post.js';
 import createHttpError from 'http-errors';
 import Comment from '../db/models/Comment.js';
+import { saveBufferToCloudinary } from '../../../src/services/cloudinary.js';
 
 export const getPosts = async (req, res) => {
   const {
@@ -101,9 +102,16 @@ export const getPostById = async (req, res) => {
 
 export const addPost = async (req, res) => {
   const { _id: userId } = req.user;
-
+  let attach = null;
+  if (req.file) {
+    const { secure_url } = await saveBufferToCloudinary({
+      buffer: req.file.buffer,
+      folder: 'attach',
+    });
+    attach = secure_url;
+  }
   // console.log(req.body);
-  const newPost = await Post.create({ ...req.body, userId });
+  const newPost = await Post.create({ ...req.body, attach, userId });
   await newPost.populate('userId', 'username');
   res.status(201).json(newPost);
 };

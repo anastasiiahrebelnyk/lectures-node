@@ -9,6 +9,7 @@ import {
   logoutUser,
   refreshUserSession,
   registerUser,
+  verifyEmail,
 } from '../controllers/authController.js';
 
 const authRouter = Router();
@@ -18,6 +19,8 @@ authRouter.post(
   celebrate(registerUserSchema, { abortEarly: false }),
   registerUser,
 );
+
+authRouter.get('/verify', verifyEmail);
 
 authRouter.post(
   '/login',

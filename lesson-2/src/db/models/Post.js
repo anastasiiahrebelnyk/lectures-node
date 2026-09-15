@@ -12,6 +12,10 @@ const postSchema = new Schema(
       default: postTypeList[0],
       enum: postTypeList,
     },
+    attach: {
+      // required: false,
+      type: String,
+    },
     userId: {
       type: Schema.Types.ObjectId,
       ref: 'User',

@@ -17,6 +17,7 @@ import {
 } from '../validation/postsValidation.js';
 import { createCommentSchema } from '../validation/commentsValidation.js';
 import { authenticate } from '../middlewares/authenticate.js';
+import upload from '../middlewares/upload.js';
 
 const postsRouter = Router();
 
@@ -26,8 +27,16 @@ postsRouter.get('/', celebrate(getPostsSchema), getPosts);
 
 postsRouter.get('/:id', celebrate(postIdSchema), getPostById);
 
+// upload.array('attach', 8); // передати кілька файлів в одному полі, де цифра  - макс кількість
+
+// upload.fields([{ //якщо файли в кількох полях, назва поля - макс кількість
+//   name: 'attach',
+//   maxCount: 1
+// }]);
+
 postsRouter.post(
   '/',
+  upload.single('attach'),
   celebrate(createPostSchema, { abortEarly: false }),
   addPost,
 );
